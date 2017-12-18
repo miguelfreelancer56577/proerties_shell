@@ -116,6 +116,24 @@ function onChange(){
 
 }
 
+function toArrayFromFile(){
+
+  local array_file=()
+
+  local fileName=$1
+
+  local count=0
+
+  while read line; do
+
+    array_file[$count]="$(echo $line)"
+
+    let count++
+
+  done < $fileName
+  
+}
+
 # get variables and values from a property file.
 
 while read line; do
@@ -127,4 +145,6 @@ done < properties.proerties_shell.conf
 # get position, variable´s name and  variable's value to arrays
 
 onChange "example.sh"
+
+toArrayFromFile "example.sh"
 
