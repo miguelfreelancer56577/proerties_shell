@@ -1,85 +1,38 @@
 #!/bin/bash
 #Filename: cecho.sh
 
-arr_var=()
-
-count=0
+arr_propertyName=()
+arr_propertyValue=()
 
 arr_positionNumber=()
 arr_variableNames=()
 arr_variableValues=()
 
-function getVariables(){
+function getPropertiesFile(){
 
- oldIFS=$IFS
+  local array_propertyName=()
+  local array_propertyValue=()
 
- IFS=$1
+  local fileName=$1
+  local propertyValue=$2
 
- innerCount=0
+  local count=0
 
- for item in $2
-  do
+  while read line; do
 
-   echo $item $count
+    array_propertyName[$count]="$( echo $line | cut -d '=' -f 1 )"
+    array_propertyValue[$count]="$( echo $line | cut -d '=' -f 2 | cut -d ':' -f $propertyValue )"
 
-   if [ $innerCount -eq 0 ]
-    then
+    let count++
 
-     arr_var[$count]="$item"
+  done < $fileName
 
-    else
-
-     echo getValue "$item" "$count"
-
-   fi
-
-#   arr_var[$count]="$item"
-
-   let count++
-
-   let innerCount++
-
- done
-   
- IFS=$oldIFS
-
-# echo ${arr_var[*]}
-
+  arr_propertyName=("${array_propertyName[*]}")
+  arr_propertyValue=("${array_propertyValue[*]}")
+  
 }
 
-function getValue(){
-
- echo get value to change
-
- local oldIFS=$IFS
-
- IFS=:
-
- local positionInArray=0;
-
- local count=0;
-
- for item in $1
- do
-
-  if [ $positionInArray -eq $count ]
-  then
-
-   arr_var[$2]="$item"
-
-   return
-
-  fi
-
-  let count++;
-
- done
-
- IFS=$oldIFS
-
-}
-
-function onChange(){
+function variablesToChange(){
 
   local array_positionNumber=()
   local array_variableNames=()
@@ -135,16 +88,13 @@ function toArrayFromFile(){
 }
 
 # get variables and values from a property file.
-
-while read line; do
-
- getVariables "=" $line
-
-done < properties.proerties_shell.conf
+getPropertiesFile "properties.proerties_shell.conf" 1
 
 # get position, variable´s name and  variable's value to arrays
 
-onChange "example.sh"
+variablesToChange "example.sh"
+
+#save every line of the file into an array
 
 toArrayFromFile "example.sh"
 
