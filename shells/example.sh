@@ -1,8 +1,8 @@
 var1=3
-var2="ruta produccion" ##
+var2="ruta produccion" #
 var3=4 
-param1="path/to/develop" ##
-param14="param 14 producion" ##
+param1="path/to/develop" #
+param14="param 14 producion" #
 
 
 var6=6 #

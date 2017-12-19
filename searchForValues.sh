@@ -37,6 +37,8 @@ function variablesToChange(){
   array_variableNames=()
   array_variableValues=()
 
+  local status=1
+
   local count=0;
 
   local fileName=$1
@@ -52,6 +54,7 @@ function variablesToChange(){
   for linea in $saveV
   do
     if [ ${#linea} -gt 0 ]; then
+        status=0
         array_positionNumber[$count]="$(echo $linea | cut -d '_' -f 2)"
         array_variableNames[$count]="$(echo $linea | cut -d '_' -f 3 | cut -d "=" -f 1)"
         array_variableValues[$count]="$(echo $linea | cut -d '_' -f 3 | cut -d "=" -f 2)"
@@ -61,6 +64,8 @@ function variablesToChange(){
   done
 
   IFS=$oldIFS
+
+  return "$status"
 
 }
 
@@ -162,25 +167,33 @@ function run(){
 
   wildCard=$4
   
-  # get variables and values from a property file.
-  getPropertiesFile $propertyFile $environment
-
   # get position, variable´s name and  variable's value to arrays
 
   variablesToChange $fileToChange $wildCard
 
-  #save every line of the file into an array
+  local checkStatus=$?
 
-  toArrayFromFile $fileToChange
+  if [ "$checkStatus" == 0 ]
+  then
+    
+    #save every line of the file into an array
 
-  #change values into array that contains every line of the file
-  onChange $wildCard
+    toArrayFromFile $fileToChange
 
-  # crete again the file
-  reCreateFile $fileToChange
+    #change values into array that contains every line of the file
+    onChange $wildCard
 
-  # clean file from this character
-  cleanFile $fileToChange
+    # crete again the file
+    reCreateFile $fileToChange
+
+    # clean file from this character
+    cleanFile $fileToChange
+       
+  else
+
+       echo "This file $fileToChange does not have any variable to change."
+
+  fi
 
 }
 
@@ -193,6 +206,9 @@ function init(){
   fileToChange=$3
 
   wildCard=$4
+
+  # get variables and values from the property file.
+  getPropertiesFile $propertyFile $environment
 
   if [ -f $fileToChange -a -e $fileToChange -a -w $fileToChange ]
     then
