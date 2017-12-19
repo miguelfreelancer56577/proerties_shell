@@ -144,6 +144,14 @@ function reCreateFile(){
 
 }
 
+function cleanFile(){
+
+  fileName=$1
+
+  sed -i 's/\r//' "$fileName"
+
+}
+
 function run(){
 
   environment=$1
@@ -170,6 +178,9 @@ function run(){
 
   # crete again the file
   reCreateFile $fileToChange
+
+  # clean file from this character
+  cleanFile $fileToChange
 
 }
 
@@ -224,4 +235,4 @@ function init(){
 }
 
 # init 1 "properties.proerties_shell.conf" "example.sh" "##"
-init 2 "properties.proerties_shell.conf" "./shells" "##CH"
+init 2 "properties.proerties_shell.conf" "./shells" "##"
