@@ -41,9 +41,9 @@ function variablesToChange(){
 
   local fileName=$1
 
-  # local saveV="$(cat $1 | grep '##')"
-  # local saveV="$(cat -n example.sh | grep '##' | sed -r 's/\s{3,}//g')"
-  local saveV="$(cat -n $fileName | grep '##' | sed -r "s/\s/_/g" | tr -d '[:space:]' | sed -r 's/_{2,}//g')"  
+  local wildCard=$2
+
+  local saveV="$(cat -n $fileName | grep $wildCard | sed -r "s/\s/_/g" | tr -d '[:space:]' | sed -r 's/_{2,}//g')"  
 
   local oldIFS=$IFS
 
@@ -88,6 +88,8 @@ function onChange(){
 
   local count=0
 
+  local wildCard=$1
+
   for variablename in "${array_variableNames[@]}"
   do
     
@@ -99,22 +101,42 @@ function onChange(){
       if [ "$property" ==  "$variablename" ]
         then
 
-        # echo $array_positionNumber[$count]
-        # echo $variablename
-        # echo $countInner
-        # echo $array_propertyValue[$countInner]
-
         local positionNumber=${array_positionNumber[$count]}
 
         let positionNumber--
 
-        array_file[$positionNumber]="$(echo $variablename=${array_propertyValue[$countInner]} )"
+        array_file[$positionNumber]="$(echo $variablename=${array_propertyValue[$countInner]} $wildCard )"
 
       fi
 
       let countInner++
       
     done
+
+    let count++
+
+  done
+
+}
+
+function reCreateFile(){
+
+  local fileName=$1
+  local count=0
+
+  for line in "${array_file[@]}"
+  do
+
+    if [ $count -eq 0 ]
+      then
+
+      echo "$line" > $fileName
+
+    else
+
+      echo "$line" >> $fileName
+
+    fi
 
     let count++
 
@@ -129,21 +151,26 @@ function run(){
   propertyFile=$2
 
   fileToChange=$3
+
+  wildCard=$4
   
   # get variables and values from a property file.
   getPropertiesFile $propertyFile $environment
 
   # get position, variable´s name and  variable's value to arrays
 
-  variablesToChange $fileToChange
+  variablesToChange $fileToChange $wildCard
 
   #save every line of the file into an array
 
   toArrayFromFile $fileToChange
 
   #change values into array that contains every line of the file
-  onChange 
+  onChange $wildCard
+
+  # crete again the file
+  reCreateFile $fileToChange
 
 }
 
-run 1 "properties.proerties_shell.conf" "example.sh"
+run 1 "properties.proerties_shell.conf" "example.sh" "##"
