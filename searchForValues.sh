@@ -173,4 +173,55 @@ function run(){
 
 }
 
-run 1 "properties.proerties_shell.conf" "example.sh" "##"
+function init(){
+  
+  environment=$1
+
+  propertyFile=$2
+
+  fileToChange=$3
+
+  wildCard=$4
+
+  if [ -f $fileToChange -a -e $fileToChange -a -w $fileToChange ]
+    then
+      echo "It's file"
+      run "$environment" "$propertyFile" "$fileToChange" "$wildCard"      
+  elif [ -d $fileToChange ]
+    then
+
+      echo "It's directory"
+
+      # files="$( find $fileToChange -type f | tr -s '[:space:]' '@' )"
+
+      files="$( find $fileToChange \( -type f \) -o \( -name ".git" -prune \)  | tr -s '[:space:]' '@' )"
+
+      oldIFS=$IFS
+
+      IFS="@"
+
+      for file in $files
+      do
+        
+        if [ -f $file -a -e $file -a -w $file ]
+          then
+            echo "run concurrent file: $file"
+            run "$environment" "$propertyFile" "$file" "$wildCard"      
+          else
+            echo "this file does not have permissions: $file"
+        fi
+
+      done
+
+      IFS=$oldIFS
+
+  else
+
+      echo "this file does not have permissions: $fileToChange"
+
+  fi
+
+}
+
+# init 1 "properties.proerties_shell.conf" "example.sh" "##"
+init 2 "properties.proerties_shell.conf" "./shells" "##"
