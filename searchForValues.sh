@@ -1,17 +1,19 @@
 #!/bin/bash
 #Filename: cecho.sh
 
-arr_propertyName=()
-arr_propertyValue=()
+array_propertyName=()
+array_propertyValue=()
 
-arr_positionNumber=()
-arr_variableNames=()
-arr_variableValues=()
+array_positionNumber=()
+array_variableNames=()
+array_variableValues=()
+
+array_file=()
 
 function getPropertiesFile(){
 
-  local array_propertyName=()
-  local array_propertyValue=()
+  array_propertyName=()
+  array_propertyValue=()
 
   local fileName=$1
   local propertyValue=$2
@@ -26,25 +28,22 @@ function getPropertiesFile(){
     let count++
 
   done < $fileName
-
-  arr_propertyName=("${array_propertyName[*]}")
-  arr_propertyValue=("${array_propertyValue[*]}")
   
 }
 
 function variablesToChange(){
 
-  local array_positionNumber=()
-  local array_variableNames=()
-  local array_variableValues=()
+  array_positionNumber=()
+  array_variableNames=()
+  array_variableValues=()
 
   local count=0;
 
-  #$1 file's name
-  
+  local fileName=$1
+
   # local saveV="$(cat $1 | grep '##')"
   # local saveV="$(cat -n example.sh | grep '##' | sed -r 's/\s{3,}//g')"
-  local saveV="$(cat -n example.sh | grep '##' | sed -r "s/\s/_/g" | tr -d '[:space:]' | sed -r 's/_{2,}//g')"  
+  local saveV="$(cat -n $fileName | grep '##' | sed -r "s/\s/_/g" | tr -d '[:space:]' | sed -r 's/_{2,}//g')"  
 
   local oldIFS=$IFS
 
@@ -63,21 +62,19 @@ function variablesToChange(){
 
   IFS=$oldIFS
 
-  arr_positionNumber=("${array_positionNumber[*]}")
-  arr_variableNames=("${array_variableNames[*]}")
-  arr_variableValues=("${array_variableValues[*]}")
-
 }
 
 function toArrayFromFile(){
 
-  local array_file=()
+  array_file=()
 
   local fileName=$1
 
   local count=0
 
   while read line; do
+
+    # echo $line
 
     array_file[$count]="$(echo $line)"
 
@@ -87,14 +84,66 @@ function toArrayFromFile(){
   
 }
 
-# get variables and values from a property file.
-getPropertiesFile "properties.proerties_shell.conf" 1
+function onChange(){
 
-# get position, variable´s name and  variable's value to arrays
+  local count=0
 
-variablesToChange "example.sh"
+  for variablename in "${array_variableNames[@]}"
+  do
+    
+    local countInner=0
 
-#save every line of the file into an array
+    for property in "${array_propertyName[@]}"
+    do
+      
+      if [ "$property" ==  "$variablename" ]
+        then
 
-toArrayFromFile "example.sh"
+        # echo $array_positionNumber[$count]
+        # echo $variablename
+        # echo $countInner
+        # echo $array_propertyValue[$countInner]
 
+        local positionNumber=${array_positionNumber[$count]}
+
+        let positionNumber--
+
+        array_file[$positionNumber]="$(echo $variablename=${array_propertyValue[$countInner]} )"
+
+      fi
+
+      let countInner++
+      
+    done
+
+    let count++
+
+  done
+
+}
+
+function run(){
+
+  environment=$1
+
+  propertyFile=$2
+
+  fileToChange=$3
+  
+  # get variables and values from a property file.
+  getPropertiesFile $propertyFile $environment
+
+  # get position, variable´s name and  variable's value to arrays
+
+  variablesToChange $fileToChange
+
+  #save every line of the file into an array
+
+  toArrayFromFile $fileToChange
+
+  #change values into array that contains every line of the file
+  onChange 
+
+}
+
+run 1 "properties.proerties_shell.conf" "example.sh"
