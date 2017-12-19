@@ -43,18 +43,18 @@ function variablesToChange(){
 
   local wildCard=$2
 
-  local saveV="$(cat -n $fileName | grep $wildCard | sed -r "s/\s/_/g" | tr -d '[:space:]' | sed -r 's/_{2,}//g')"  
+  local saveV="$(cat -n $fileName | grep $wildCard | tr -s '[:space:]' "_")"  
 
   local oldIFS=$IFS
 
-  IFS="##"
+  IFS="$wildCard"
 
   for linea in $saveV
   do
     if [ ${#linea} -gt 0 ]; then
-        array_positionNumber[$count]="$(echo $linea | cut -d '_' -f 1)"
-        array_variableNames[$count]="$(echo $linea | cut -d '_' -f 2 | cut -d "=" -f 1)"
-        array_variableValues[$count]="$(echo $linea | cut -d '_' -f 2 | cut -d "=" -f 2)"
+        array_positionNumber[$count]="$(echo $linea | cut -d '_' -f 2)"
+        array_variableNames[$count]="$(echo $linea | cut -d '_' -f 3 | cut -d "=" -f 1)"
+        array_variableValues[$count]="$(echo $linea | cut -d '_' -f 3 | cut -d "=" -f 2)"
         let count++
     fi
 
@@ -192,9 +192,9 @@ function init(){
 
       echo "It's directory"
 
-      # files="$( find $fileToChange -type f | tr -s '[:space:]' '@' )"
+      files="$( find $fileToChange -type f | tr -s '[:space:]' '@' )"
 
-      files="$( find $fileToChange \( -type f \) -o \( -name ".git" -prune \)  | tr -s '[:space:]' '@' )"
+      # files="$( find $fileToChange \( -type f \) -o \( -name ".git" -prune \)  | tr -s '[:space:]' '@' )"
 
       oldIFS=$IFS
 
@@ -224,4 +224,4 @@ function init(){
 }
 
 # init 1 "properties.proerties_shell.conf" "example.sh" "##"
-init 2 "properties.proerties_shell.conf" "./shells" "##"
+init 2 "properties.proerties_shell.conf" "./shells" "##CH"
